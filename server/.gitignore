@@ -3,7 +3,6 @@
 
 .env
 
-go.sum
 
 .claude
 .cursor
