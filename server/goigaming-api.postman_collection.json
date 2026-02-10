@@ -1,0 +1,226 @@
+{
+	"info": {
+		"_postman_id": "goigaming-api-collection",
+		"name": "GoiGaming API",
+		"description": "Коллекция API для тестирования GoiGaming сервера",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Проверка работоспособности сервера"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Stats",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/game/stats",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"game",
+						"stats"
+					]
+				},
+				"description": "Получить статистику подключенных клиентов"
+			},
+			"response": []
+		},
+		{
+			"name": "Send Event - Roulette Spin",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"type\": \"roulette_spin\",\n    \"game_id\": \"roulette_table_1\",\n    \"message\": \"Round started\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/game/event",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"game",
+						"event"
+					]
+				},
+				"description": "Отправить событие начала раунда рулетки"
+			},
+			"response": []
+		},
+		{
+			"name": "Send Event - Roulette Result",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"type\": \"roulette_result\",\n    \"game_id\": \"roulette_table_1\",\n    \"message\": \"Round finished: number 7, color red\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/game/event",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"game",
+						"event"
+					]
+				},
+				"description": "Отправить событие результата раунда рулетки"
+			},
+			"response": []
+		},
+		{
+			"name": "Send Event - Bet Placed",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"type\": \"bet_placed\",\n    \"game_id\": \"roulette_table_1\",\n    \"message\": \"User placed bet on red, amount: 100\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/game/event",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"game",
+						"event"
+					]
+				},
+				"description": "Отправить событие размещения ставки"
+			},
+			"response": []
+		},
+		{
+			"name": "Send Event - Error Test (Invalid Method)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/game/event",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"game",
+						"event"
+					]
+				},
+				"description": "Тест ошибки: использование неверного HTTP метода (должен быть POST)"
+			},
+			"response": []
+		},
+		{
+			"name": "Send Event - Error Test (Invalid JSON)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"invalid\": \"json\"",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/game/event",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"game",
+						"event"
+					]
+				},
+				"description": "Тест ошибки: отправка невалидного JSON"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost",
+			"type": "string"
+		}
+	]
+}
