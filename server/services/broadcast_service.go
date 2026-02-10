@@ -18,5 +18,6 @@ func (s *BroadcastService) BroadcastEvent(event models.GameEvent) error {
 }
 
 func (s *BroadcastService) GetConnectedClients() int {
-	return len(s.melody.Sessions())
+	sessions, _ := s.melody.Sessions()
+	return len(sessions)
 }

@@ -6,7 +6,7 @@ import (
 
     "github.com/google/uuid"
     "github.com/jackc/pgx/v5/pgxpool"
-    "goigaming/models"
+    "github.com/jokeoa/igaming/models"
 )
 
 type RouletteRoundRepository struct {

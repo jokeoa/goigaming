@@ -7,3 +7,4 @@ type GameEvent struct {
 	GameID    string    `json:"game_id"`
 	Message   string    `json:"message"`
 	Timestamp time.Time `json:"timestamp"`
+}
