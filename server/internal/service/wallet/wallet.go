@@ -70,7 +70,7 @@ func (s *Service) Deposit(ctx context.Context, userID uuid.UUID, amount string) 
 
 	var result domain.Wallet
 
-	for attempt := range maxRetries {
+	for attempt := 0; attempt < maxRetries; attempt++ {
 		result, err = s.executeDeposit(ctx, userID, amt)
 		if err == nil {
 			return result, nil
@@ -78,12 +78,9 @@ func (s *Service) Deposit(ctx context.Context, userID uuid.UUID, amount string) 
 		if !errors.Is(err, domain.ErrOptimisticLock) {
 			return domain.Wallet{}, err
 		}
-		if attempt == maxRetries-1 {
-			return domain.Wallet{}, fmt.Errorf("WalletService.Deposit: max retries exceeded: %w", err)
-		}
 	}
 
-	return result, nil
+	return domain.Wallet{}, fmt.Errorf("WalletService.Deposit: max retries exceeded: %w", err)
 }
 
 func (s *Service) executeDeposit(ctx context.Context, userID uuid.UUID, amount decimal.Decimal) (domain.Wallet, error) {
@@ -133,7 +130,7 @@ func (s *Service) Withdraw(ctx context.Context, userID uuid.UUID, amount string)
 
 	var result domain.Wallet
 
-	for attempt := range maxRetries {
+	for attempt := 0; attempt < maxRetries; attempt++ {
 		result, err = s.executeWithdraw(ctx, userID, amt)
 		if err == nil {
 			return result, nil
@@ -141,12 +138,9 @@ func (s *Service) Withdraw(ctx context.Context, userID uuid.UUID, amount string)
 		if !errors.Is(err, domain.ErrOptimisticLock) {
 			return domain.Wallet{}, err
 		}
-		if attempt == maxRetries-1 {
-			return domain.Wallet{}, fmt.Errorf("WalletService.Withdraw: max retries exceeded: %w", err)
-		}
 	}
 
-	return result, nil
+	return domain.Wallet{}, fmt.Errorf("WalletService.Withdraw: max retries exceeded: %w", err)
 }
 
 func (s *Service) executeWithdraw(ctx context.Context, userID uuid.UUID, amount decimal.Decimal) (domain.Wallet, error) {
