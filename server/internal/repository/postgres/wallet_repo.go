@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jokeoa/igaming/internal/core/domain"
+	"github.com/jokeoa/goigaming/internal/core/domain"
 	"github.com/shopspring/decimal"
 )
 

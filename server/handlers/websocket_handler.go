@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jokeoa/igaming/models"
-	"github.com/jokeoa/igaming/services"
+	"github.com/jokeoa/goigaming/models"
+	"github.com/jokeoa/goigaming/services"
 	"github.com/olahol/melody"
 )
 
