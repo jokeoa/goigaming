@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jokeoa/igaming/internal/core/domain"
+	"github.com/jokeoa/goigaming/internal/core/domain"
 )
 
 type Response struct {

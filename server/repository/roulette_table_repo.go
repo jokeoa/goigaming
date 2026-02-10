@@ -5,7 +5,7 @@ import (
     "fmt"
 
     "github.com/jackc/pgx/v5/pgxpool"
-    "github.com/jokeoa/igaming/models"
+    "github.com/jokeoa/goigaming/models"
 )
 
 type RouletteTableRepository struct {

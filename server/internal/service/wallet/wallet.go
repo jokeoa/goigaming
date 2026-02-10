@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jokeoa/igaming/internal/core/domain"
-	"github.com/jokeoa/igaming/internal/core/ports"
-	"github.com/jokeoa/igaming/internal/repository/postgres"
+	"github.com/jokeoa/goigaming/internal/core/domain"
+	"github.com/jokeoa/goigaming/internal/core/ports"
+	"github.com/jokeoa/goigaming/internal/repository/postgres"
 	"github.com/shopspring/decimal"
 )
 

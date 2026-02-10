@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jokeoa/igaming/handlers"
-	"github.com/jokeoa/igaming/services"
+	"github.com/jokeoa/goigaming/handlers"
+	"github.com/jokeoa/goigaming/services"
 	"github.com/olahol/melody"
 )
 

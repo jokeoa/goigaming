@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jokeoa/igaming/internal/core/domain"
-	"github.com/jokeoa/igaming/internal/core/ports"
+	"github.com/jokeoa/goigaming/internal/core/domain"
+	"github.com/jokeoa/goigaming/internal/core/ports"
 )
 
 type AuthHandler struct {

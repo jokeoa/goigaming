@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jokeoa/igaming/internal/core/domain"
+	"github.com/jokeoa/goigaming/internal/core/domain"
 )
 
 type TransactionRepository struct {
