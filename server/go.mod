@@ -1,4 +1,4 @@
-module github.com/jokeoa/igaming
+module github.com/jokeoa/goigaming
 
 go 1.25.1
 
