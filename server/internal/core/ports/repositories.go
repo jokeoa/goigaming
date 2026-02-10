@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jokeoa/igaming/internal/core/domain"
+	"github.com/jokeoa/goigaming/internal/core/domain"
 	"github.com/shopspring/decimal"
 )
 

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/jokeoa/igaming/models"
+	"github.com/jokeoa/goigaming/models"
 	"github.com/olahol/melody"
 )
 

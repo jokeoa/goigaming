@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jokeoa/igaming/internal/handler/http/middleware"
+	"github.com/jokeoa/goigaming/internal/handler/http/middleware"
 )
 
 func getUserID(c *gin.Context) (uuid.UUID, bool) {

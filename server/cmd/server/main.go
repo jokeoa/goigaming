@@ -9,13 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jokeoa/igaming/internal/config"
-	"github.com/jokeoa/igaming/internal/core/ports"
-	handler "github.com/jokeoa/igaming/internal/handler/http"
-	"github.com/jokeoa/igaming/internal/repository/postgres"
-	authService "github.com/jokeoa/igaming/internal/service/auth"
-	userService "github.com/jokeoa/igaming/internal/service/user"
-	walletService "github.com/jokeoa/igaming/internal/service/wallet"
+	"github.com/jokeoa/goigaming/internal/config"
+	"github.com/jokeoa/goigaming/internal/core/ports"
+	handler "github.com/jokeoa/goigaming/internal/handler/http"
+	"github.com/jokeoa/goigaming/internal/repository/postgres"
+	authService "github.com/jokeoa/goigaming/internal/service/auth"
+	userService "github.com/jokeoa/goigaming/internal/service/user"
+	walletService "github.com/jokeoa/goigaming/internal/service/wallet"
 )
 
 func main() {
