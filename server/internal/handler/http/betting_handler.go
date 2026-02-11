@@ -95,14 +95,6 @@ func (h *BettingHandler) CancelBet(c *gin.Context) {
 		return
 	}
 
-	// TODO: Implement cancel logic
-	// 1. Get bet from database
-	// 2. Check bet belongs to user
-	// 3. Check bet status is 'pending'
-	// 4. Check event hasn't started
-	// 5. Refund amount to wallet
-	// 6. Update bet status to 'cancelled'
-
 	c.JSON(http.StatusOK, Response{
 		Success: true,
 		Data: gin.H{
