@@ -45,6 +45,32 @@ func mapDomainError(err error) (int, string) {
 		return http.StatusUnprocessableEntity, "insufficient funds"
 	case errors.Is(err, domain.ErrInvalidAmount):
 		return http.StatusBadRequest, "amount must be greater than zero"
+	case errors.Is(err, domain.ErrTableNotFound):
+		return http.StatusNotFound, "table not found"
+	case errors.Is(err, domain.ErrTableFull):
+		return http.StatusConflict, "table is full"
+	case errors.Is(err, domain.ErrPlayerNotFound):
+		return http.StatusNotFound, "player not found"
+	case errors.Is(err, domain.ErrPlayerAlreadySeated):
+		return http.StatusConflict, "player already seated at this table"
+	case errors.Is(err, domain.ErrHandNotFound):
+		return http.StatusNotFound, "hand not found"
+	case errors.Is(err, domain.ErrNotPlayerTurn):
+		return http.StatusBadRequest, "not your turn"
+	case errors.Is(err, domain.ErrInvalidAction):
+		return http.StatusBadRequest, "invalid action"
+	case errors.Is(err, domain.ErrInvalidBetAmount):
+		return http.StatusBadRequest, "invalid bet amount"
+	case errors.Is(err, domain.ErrInsufficientStack):
+		return http.StatusBadRequest, "insufficient stack"
+	case errors.Is(err, domain.ErrGameNotStarted):
+		return http.StatusBadRequest, "game not started"
+	case errors.Is(err, domain.ErrInvalidBuyIn):
+		return http.StatusBadRequest, "invalid buy-in amount"
+	case errors.Is(err, domain.ErrSeatTaken):
+		return http.StatusConflict, "seat is taken"
+	case errors.Is(err, domain.ErrMinPlayersRequired):
+		return http.StatusBadRequest, "minimum 2 players required"
 	default:
 		return http.StatusInternalServerError, "internal server error"
 	}

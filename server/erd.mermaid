@@ -1,0 +1,197 @@
+erDiagram
+    users {
+        uuid id PK
+        string email UK
+        string password_hash
+        string google_id UK
+        string username UK
+        string avatar_url
+        string role
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    sessions {
+        uuid id PK
+        uuid user_id FK
+        string refresh_token UK
+        string ip_address
+        string user_agent
+        timestamp expires_at
+        timestamp created_at
+    }
+
+    wallets {
+        uuid id PK
+        uuid user_id FK
+        decimal balance
+        decimal bonus_balance
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transactions {
+        uuid id PK
+        uuid wallet_id FK
+        string type
+        decimal amount
+        decimal balance_before
+        decimal balance_after
+        string reference_id
+        string reference_type
+        json metadata
+        timestamp created_at
+    }
+
+    poker_tables {
+        uuid id PK
+        string name
+        decimal small_blind
+        decimal big_blind
+        decimal min_buy_in
+        decimal max_buy_in
+        int max_players
+        string status
+        timestamp created_at
+    }
+
+    poker_players {
+        uuid id PK
+        uuid table_id FK
+        uuid user_id FK
+        decimal stack
+        int seat_number
+        string status
+        timestamp joined_at
+    }
+
+    poker_hands {
+        uuid id PK
+        uuid table_id FK
+        int hand_number
+        decimal pot
+        string community_cards
+        string stage
+        uuid winner_id FK
+        timestamp started_at
+        timestamp ended_at
+    }
+
+    poker_hand_players {
+        uuid id PK
+        uuid hand_id FK
+        uuid player_id FK
+        string hole_cards
+        decimal bet_amount
+        string last_action
+        boolean is_active
+    }
+
+    poker_actions {
+        uuid id PK
+        uuid hand_id FK
+        uuid player_id FK
+        string action
+        decimal amount
+        string stage
+        int action_order
+        timestamp created_at
+    }
+
+    roulette_tables {
+        uuid id PK
+        string name
+        decimal min_bet
+        decimal max_bet
+        string status
+        timestamp created_at
+    }
+
+    roulette_rounds {
+        uuid id PK
+        uuid table_id FK
+        int round_number
+        int result
+        string result_color
+        string seed_hash
+        string seed_revealed
+        timestamp betting_ends_at
+        timestamp created_at
+        timestamp settled_at
+    }
+
+    roulette_bets {
+        uuid id PK
+        uuid round_id FK
+        uuid user_id FK
+        string bet_type
+        string bet_value
+        decimal amount
+        decimal payout
+        string status
+        timestamp created_at
+    }
+
+    sports_events {
+        uuid id PK
+        string sport
+        string league
+        string home_team
+        string away_team
+        timestamp starts_at
+        string status
+        string result
+        timestamp created_at
+    }
+
+    sports_markets {
+        uuid id PK
+        uuid event_id FK
+        string market_type
+        string description
+        boolean is_active
+        timestamp created_at
+    }
+
+    sports_outcomes {
+        uuid id PK
+        uuid market_id FK
+        string name
+        decimal odds
+        string result
+        timestamp updated_at
+    }
+
+    sports_bets {
+        uuid id PK
+        uuid user_id FK
+        uuid outcome_id FK
+        decimal stake
+        decimal odds_at_placement
+        decimal potential_payout
+        decimal actual_payout
+        string status
+        timestamp created_at
+        timestamp settled_at
+    }
+
+    users ||--o| wallets : has
+    users ||--o{ sessions : has
+    wallets ||--o{ transactions : has
+    
+    users ||--o{ poker_players : plays
+    poker_tables ||--o{ poker_players : has
+    poker_tables ||--o{ poker_hands : has
+    poker_hands ||--o{ poker_hand_players : has
+    poker_hands ||--o{ poker_actions : has
+    poker_players ||--o{ poker_hand_players : participates
+    poker_players ||--o{ poker_actions : performs
+    
+    roulette_tables ||--o{ roulette_rounds : has
+    roulette_rounds ||--o{ roulette_bets : has
+    users ||--o{ roulette_bets : places
+    
+    sports_events ||--o{ sports_markets : has
+    sports_markets ||--o{ sports_outcomes : has
+    sports_outcomes ||--o{ sports_bets : has
+    users ||--o{ sports_bets : places

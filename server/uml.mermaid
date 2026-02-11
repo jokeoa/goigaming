@@ -1,0 +1,315 @@
+classDiagram
+    %% ==========================================
+    %% IGaming Platform - Three-Layer Architecture
+    %% UML Class Diagram
+    %% ==========================================
+
+    %% === PRESENTATION LAYER ===
+    namespace PresentationLayer {
+        class AuthHandler {
+            +Register(req) Response
+            +Login(req) Response
+            +GoogleOAuth(req) Response
+            +RefreshToken(req) Response
+            +Logout(req) Response
+        }
+
+        class UserHandler {
+            +GetProfile(req) Response
+            +UpdateProfile(req) Response
+            +GetBalance(req) Response
+        }
+
+        class PokerHandler {
+            +GetTables(req) Response
+            +CreateTable(req) Response
+            +JoinTable(req) Response
+            +LeaveTable(req) Response
+        }
+
+        class RouletteHandler {
+            +GetTables(req) Response
+            +PlaceBet(req) Response
+            +GetHistory(req) Response
+        }
+
+        class BettingHandler {
+            +GetEvents(req) Response
+            +GetMarkets(req) Response
+            +PlaceBet(req) Response
+            +GetMyBets(req) Response
+        }
+
+        class WebSocketHub {
+            -clients Map
+            +Register(client)
+            +Unregister(client)
+            +Broadcast(room, message)
+            +SendToUser(userId, message)
+        }
+
+        class AdminHandler {
+            +GetUsers(req) Response
+            +UpdateUser(req) Response
+            +GetAnalytics(req) Response
+            +SettleBets(req) Response
+        }
+    }
+
+    %% === BUSINESS LOGIC LAYER ===
+    namespace BusinessLogicLayer {
+        class AuthService {
+            -userRepo UserRepository
+            -sessionRepo SessionRepository
+            -passwordHasher PasswordHasher
+            -jwtManager JWTManager
+            +Register(email, password) User
+            +Login(email, password) Tokens
+            +GoogleAuth(googleToken) Tokens
+            +RefreshToken(refreshToken) Tokens
+            +Logout(sessionId)
+        }
+
+        class UserService {
+            -userRepo UserRepository
+            -walletRepo WalletRepository
+            +GetProfile(userId) User
+            +UpdateProfile(userId, data) User
+            +GetBalance(userId) Wallet
+        }
+
+        class WalletService {
+            -walletRepo WalletRepository
+            -txRepo TransactionRepository
+            +GetBalance(userId) decimal
+            +Credit(userId, amount, type, ref) Transaction
+            +Debit(userId, amount, type, ref) Transaction
+            +GetHistory(userId, filters) Transactions
+        }
+
+        class PokerEngine {
+            -tableRepo PokerTableRepository
+            -playerRepo PokerPlayerRepository
+            -handRepo PokerHandRepository
+            -walletService WalletService
+            -rng RNGService
+            +CreateTable(config) Table
+            +JoinTable(tableId, userId, buyIn) Player
+            +StartHand(tableId) Hand
+            +ProcessAction(handId, playerId, action) HandState
+            +EvaluateHand(cards) HandRank
+            +DetermineWinner(handId) Result
+        }
+
+        class RouletteEngine {
+            -tableRepo RouletteTableRepository
+            -roundRepo RouletteRoundRepository
+            -betRepo RouletteBetRepository
+            -walletService WalletService
+            -rng RNGService
+            +GetActiveTables() Tables
+            +PlaceBet(roundId, userId, betType, value, amount) Bet
+            +SpinWheel(roundId) Result
+            +SettleRound(roundId) Payouts
+            +CalculatePayout(betType, betValue, result) decimal
+        }
+
+        class BettingEngine {
+            -eventRepo SportEventRepository
+            -marketRepo MarketRepository
+            -outcomeRepo OutcomeRepository
+            -betRepo SportBetRepository
+            -walletService WalletService
+            +GetEvents(filters) Events
+            +GetMarkets(eventId) Markets
+            +PlaceBet(userId, outcomeId, stake) Bet
+            +SettleEvent(eventId, result) Settlements
+            +CalculatePayout(odds, stake) decimal
+        }
+
+        class RNGService {
+            -seed bytes
+            +GenerateSecureSeed() string
+            +GetRandomNumber(min, max) int
+            +ShuffleDeck() Cards
+            +GenerateHash(seed) string
+            +VerifyFairness(seed, hash) bool
+        }
+
+        class JWTManager {
+            -secretKey string
+            -accessTTL duration
+            -refreshTTL duration
+            +GenerateTokens(userId) Tokens
+            +ValidateAccessToken(token) Claims
+            +ValidateRefreshToken(token) Claims
+        }
+    }
+
+    %% === DATA ACCESS LAYER ===
+    namespace DataAccessLayer {
+        class UserRepository {
+            -db Database
+            +Create(user) User
+            +FindById(id) User
+            +FindByEmail(email) User
+            +FindByGoogleId(googleId) User
+            +Update(user) User
+            +Delete(id)
+        }
+
+        class SessionRepository {
+            -db Database
+            +Create(session) Session
+            +FindByToken(token) Session
+            +Delete(id)
+            +DeleteByUserId(userId)
+        }
+
+        class WalletRepository {
+            -db Database
+            +Create(wallet) Wallet
+            +FindByUserId(userId) Wallet
+            +UpdateBalance(id, amount) Wallet
+            +Lock(id) Wallet
+        }
+
+        class TransactionRepository {
+            -db Database
+            +Create(tx) Transaction
+            +FindByWalletId(walletId, filters) Transactions
+        }
+
+        class PokerTableRepository {
+            -db Database
+            +Create(table) Table
+            +FindById(id) Table
+            +FindActive() Tables
+            +Update(table) Table
+        }
+
+        class PokerPlayerRepository {
+            -db Database
+            +Create(player) Player
+            +FindByTableId(tableId) Players
+            +Update(player) Player
+            +Delete(id)
+        }
+
+        class PokerHandRepository {
+            -db Database
+            +Create(hand) Hand
+            +FindById(id) Hand
+            +Update(hand) Hand
+            +AddAction(action) Action
+        }
+
+        class RouletteTableRepository {
+            -db Database
+            +Create(table) Table
+            +FindActive() Tables
+            +Update(table) Table
+        }
+
+        class RouletteRoundRepository {
+            -db Database
+            +Create(round) Round
+            +FindById(id) Round
+            +FindCurrent(tableId) Round
+            +Update(round) Round
+        }
+
+        class RouletteBetRepository {
+            -db Database
+            +Create(bet) Bet
+            +FindByRoundId(roundId) Bets
+            +Update(bet) Bet
+        }
+
+        class SportEventRepository {
+            -db Database
+            +Create(event) Event
+            +FindById(id) Event
+            +FindUpcoming() Events
+            +Update(event) Event
+        }
+
+        class MarketRepository {
+            -db Database
+            +Create(market) Market
+            +FindByEventId(eventId) Markets
+            +Update(market) Market
+        }
+
+        class OutcomeRepository {
+            -db Database
+            +Create(outcome) Outcome
+            +FindById(id) Outcome
+            +FindByMarketId(marketId) Outcomes
+            +Update(outcome) Outcome
+        }
+
+        class SportBetRepository {
+            -db Database
+            +Create(bet) Bet
+            +FindByUserId(userId) Bets
+            +FindByOutcomeId(outcomeId) Bets
+            +Update(bet) Bet
+        }
+
+        class RedisCache {
+            -client RedisClient
+            +Get(key) value
+            +Set(key, value, ttl)
+            +Delete(key)
+            +Publish(channel, message)
+            +Subscribe(channel) Channel
+        }
+    }
+
+    %% === RELATIONSHIPS ===
+    
+    %% Presentation -> Business Logic
+    AuthHandler --> AuthService
+    UserHandler --> UserService
+    PokerHandler --> PokerEngine
+    RouletteHandler --> RouletteEngine
+    BettingHandler --> BettingEngine
+    AdminHandler --> UserService
+    AdminHandler --> BettingEngine
+    WebSocketHub --> PokerEngine
+    WebSocketHub --> RouletteEngine
+
+    %% Business Logic -> Data Access
+    AuthService --> UserRepository
+    AuthService --> SessionRepository
+    AuthService --> JWTManager
+    UserService --> UserRepository
+    UserService --> WalletRepository
+    WalletService --> WalletRepository
+    WalletService --> TransactionRepository
+
+    PokerEngine --> PokerTableRepository
+    PokerEngine --> PokerPlayerRepository
+    PokerEngine --> PokerHandRepository
+    PokerEngine --> WalletService
+    PokerEngine --> RNGService
+
+    RouletteEngine --> RouletteTableRepository
+    RouletteEngine --> RouletteRoundRepository
+    RouletteEngine --> RouletteBetRepository
+    RouletteEngine --> WalletService
+    RouletteEngine --> RNGService
+
+    BettingEngine --> SportEventRepository
+    BettingEngine --> MarketRepository
+    BettingEngine --> OutcomeRepository
+    BettingEngine --> SportBetRepository
+    BettingEngine --> WalletService
+
+    %% Data Access -> Cache
+    UserRepository --> RedisCache
+    WalletRepository --> RedisCache
+    PokerTableRepository --> RedisCache
+    RouletteRoundRepository --> RedisCache
+    SportEventRepository --> RedisCache
