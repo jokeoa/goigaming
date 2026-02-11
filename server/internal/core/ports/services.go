@@ -25,3 +25,12 @@ type WalletService interface {
 	Withdraw(ctx context.Context, userID uuid.UUID, amount string) (domain.Wallet, error)
 	GetTransactions(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.Transaction, error)
 }
+
+type PokerService interface {
+	CreateTable(ctx context.Context, table domain.PokerTable) (domain.PokerTable, error)
+	GetTable(ctx context.Context, tableID uuid.UUID) (domain.PokerTable, error)
+	ListTables(ctx context.Context) ([]domain.PokerTable, error)
+	JoinTable(ctx context.Context, tableID, userID uuid.UUID, seatNumber int, buyIn string) (domain.PokerPlayer, error)
+	LeaveTable(ctx context.Context, tableID, userID uuid.UUID) error
+	GetTableState(ctx context.Context, tableID uuid.UUID) (domain.WSTableState, error)
+}
