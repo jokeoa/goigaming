@@ -1,0 +1,32 @@
+{{define "navbar"}}
+<nav class="bg-gray-800 shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="text-2xl font-bold text-purple-500">🎰 iGaming</a>
+                <div class="hidden md:flex space-x-4">
+                    <a href="/lobby" class="hover:text-purple-400">Lobby</a>
+                    <a href="/roulette" class="hover:text-purple-400">Roulette</a>
+                    <a href="/poker" class="hover:text-purple-400">Poker</a>
+                    <a href="/betting" class="hover:text-purple-400">Sports</a>
+                </div>
+            </div>
+            
+            {{if .User}}
+            <div class="flex items-center space-x-4">
+                <div class="text-green-400 font-semibold">
+                    💰 ${{.User.Balance | formatDecimal}}
+                </div>
+                <a href="/profile" class="hover:text-purple-400">{{.User.Username}}</a>
+                <a href="/logout" class="text-red-400 hover:text-red-300">Logout</a>
+            </div>
+            {{else}}
+            <div class="space-x-4">
+                <a href="/login" class="hover:text-purple-400">Login</a>
+                <a href="/register" class="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700">Sign Up</a>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</nav>
+{{end}}
