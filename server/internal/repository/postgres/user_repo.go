@@ -41,17 +41,15 @@ func (r *UserRepository) Create(ctx context.Context, user domain.User) (domain.U
 	return u, nil
 }
 
-func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	query := `
-		SELECT id, username, email, password_hash, created_at, updated_at
-		FROM users
-		WHERE id = $1
-	`
-
-	var u domain.User
-	err := r.db.QueryRow(ctx, query, id).Scan(
-		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt,
-	)
+query := `
+	SELECT id, username, email, password_hash, refresh_token, created_at, updated_at
+	FROM users
+	WHERE id = $1
+`
+var u domain.User
+err := r.db.QueryRow(ctx, query, id).Scan(
+	&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.RefreshToken, &u.CreatedAt, &u.UpdatedAt,
+)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return u, domain.ErrUserNotFound
@@ -82,6 +80,44 @@ func (r *UserRepository) Update(ctx context.Context, user domain.User) (domain.U
 			return u, domain.ErrUserAlreadyExists
 		}
 		return u, fmt.Errorf("UserRepository.Update: %w", err)
+	}
+	return u, nil
+}
+
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
+	query := `
+		SELECT id, username, email, password_hash, refresh_token, created_at, updated_at
+		FROM users
+		WHERE email = $1
+	`
+	var u domain.User
+	err := r.db.QueryRow(ctx, query, email).Scan(
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.RefreshToken, &u.CreatedAt, &u.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return u, domain.ErrUserNotFound
+		}
+		return u, fmt.Errorf("UserRepository.FindByEmail: %w", err)
+	}
+	return u, nil
+}
+
+func (r *UserRepository) FindByUsername(ctx context.Context, username string) (domain.User, error) {
+	query := `
+		SELECT id, username, email, password_hash, refresh_token, created_at, updated_at
+		FROM users
+		WHERE username = $1
+	`
+	var u domain.User
+	err := r.db.QueryRow(ctx, query, username).Scan(
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.RefreshToken, &u.CreatedAt, &u.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return u, domain.ErrUserNotFound
+		}
+		return u, fmt.Errorf("UserRepository.FindByUsername: %w", err)
 	}
 	return u, nil
 }
