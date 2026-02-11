@@ -11,6 +11,7 @@ type AuthService interface {
 	Register(ctx context.Context, username, email, password string) (domain.User, error)
 	Login(ctx context.Context, email, password string) (domain.TokenPair, error)
 	ValidateToken(token string) (domain.TokenClaims, error)
+	RefreshToken(ctx context.Context, refreshToken string) (domain.TokenPair, error)
 }
 
 type UserService interface {
