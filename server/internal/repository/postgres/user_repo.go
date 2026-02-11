@@ -41,15 +41,16 @@ func (r *UserRepository) Create(ctx context.Context, user domain.User) (domain.U
 	return u, nil
 }
 
-query := `
-	SELECT id, username, email, password_hash, refresh_token, created_at, updated_at
-	FROM users
-	WHERE id = $1
-`
-var u domain.User
-err := r.db.QueryRow(ctx, query, id).Scan(
-	&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.RefreshToken, &u.CreatedAt, &u.UpdatedAt,
-)
+func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
+    query := `
+	    SELECT id, username, email, password_hash, refresh_token, created_at, updated_at
+	    FROM users
+	    WHERE id = $1
+    `
+    var u domain.User
+    err := r.db.QueryRow(ctx, query, id).Scan(
+	    &u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.RefreshToken, &u.CreatedAt, &u.UpdatedAt,
+    )
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return u, domain.ErrUserNotFound
