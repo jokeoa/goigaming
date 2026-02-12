@@ -9,7 +9,14 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
+
+# API/WS URLs - use nginx proxy (port 80) when built for docker-compose
+ARG NEXT_PUBLIC_API_URL=http://localhost/api/v1
+ARG NEXT_PUBLIC_WS_URL=ws://localhost/ws
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN pnpm build
 
 FROM node:20-alpine AS runner
