@@ -11,6 +11,18 @@ export const QUERY_KEYS = {
   walletBalance: ["wallet", "balance"] as const,
   transactions: (params?: { limit?: number; offset?: number }) =>
     ["wallet", "transactions", params] as const,
-  tables: ["tables"] as const,
-  table: (id: string) => ["tables", id] as const,
+  pokerTables: ["poker", "tables"] as const,
+  pokerTable: (id: string) => ["poker", "tables", id] as const,
+  pokerTableState: (id: string) => ["poker", "tables", id, "state"] as const,
+  rouletteTables: ["roulette", "tables"] as const,
+  rouletteTable: (id: string) => ["roulette", "tables", id] as const,
+  rouletteCurrentRound: (tableId: string) =>
+    ["roulette", "tables", tableId, "current-round"] as const,
+  rouletteHistory: (
+    tableId: string,
+    params?: { limit?: number; offset?: number },
+  ) => ["roulette", "tables", tableId, "history", params] as const,
+  rouletteMyBets: (params?: { limit?: number; offset?: number }) =>
+    ["roulette", "bets", "me", params] as const,
+  rouletteRound: (id: string) => ["roulette", "rounds", id] as const,
 } as const;

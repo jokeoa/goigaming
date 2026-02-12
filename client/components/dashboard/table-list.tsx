@@ -3,11 +3,11 @@
 import { Gamepad2 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTables } from "@/hooks/use-tables";
+import { usePokerTables } from "@/hooks/use-tables";
 import { TableCard } from "./table-card";
 
 export function TableList() {
-  const { data: tables, isLoading, error } = useTables();
+  const { data: tables, isLoading, error } = usePokerTables();
 
   if (isLoading) {
     return (

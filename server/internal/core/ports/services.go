@@ -34,3 +34,13 @@ type PokerService interface {
 	LeaveTable(ctx context.Context, tableID, userID uuid.UUID) error
 	GetTableState(ctx context.Context, tableID uuid.UUID) (domain.WSTableState, error)
 }
+
+type RouletteService interface {
+	GetTable(ctx context.Context, tableID uuid.UUID) (domain.RouletteTable, error)
+	ListActiveTables(ctx context.Context) ([]domain.RouletteTable, error)
+	GetCurrentRound(ctx context.Context, tableID uuid.UUID) (domain.RouletteRound, error)
+	GetRound(ctx context.Context, roundID uuid.UUID) (domain.RouletteRound, error)
+	GetRoundHistory(ctx context.Context, tableID uuid.UUID, limit, offset int) ([]domain.RouletteRound, error)
+	PlaceBet(ctx context.Context, userID, tableID, roundID uuid.UUID, betType, betValue, amount string) (domain.RouletteBet, error)
+	GetUserBets(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.RouletteBet, error)
+}

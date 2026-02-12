@@ -11,4 +11,5 @@ type TokenPair struct {
 type TokenClaims struct {
 	UserID   uuid.UUID `json:"user_id"`
 	Username string    `json:"username"`
+	IsAdmin  bool      `json:"is_admin"`
 }

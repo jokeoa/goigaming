@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Menu, User, Wallet } from "lucide-react";
+import { CircleDot, LayoutDashboard, Menu, User, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/roulette", label: "Roulette", icon: CircleDot },
   { href: "/wallet", label: "Wallet", icon: Wallet },
   { href: "/profile", label: "Profile", icon: User },
 ] as const;

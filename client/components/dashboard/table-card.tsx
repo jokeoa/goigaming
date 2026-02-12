@@ -1,4 +1,3 @@
-import { Users } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,38 +10,43 @@ type TableCardProps = {
 };
 
 export function TableCard({ table }: TableCardProps) {
-  const isFull = table.currentPlayers >= table.maxPlayers;
-
   return (
     <Card className="border-border">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm">{table.name}</CardTitle>
-        <Badge variant={isFull ? "secondary" : "default"} className="text-xs">
-          {isFull ? "Full" : table.stage === "waiting" ? "Open" : "In Progress"}
+        <Badge
+          variant={table.status === "active" ? "default" : "secondary"}
+          className="text-xs"
+        >
+          {table.status === "waiting"
+            ? "Open"
+            : table.status === "active"
+              ? "In Progress"
+              : "Closed"}
         </Badge>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            <span>
-              {table.currentPlayers}/{table.maxPlayers}
-            </span>
-          </div>
+          <span>Max: {table.max_players} players</span>
           <span>
-            Blinds: {formatCurrency(table.smallBlind)}/
-            {formatCurrency(table.bigBlind)}
+            Blinds: {formatCurrency(table.small_blind)}/
+            {formatCurrency(table.big_blind)}
           </span>
         </div>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
-            Buy-in: {formatCurrency(table.minBuyIn)} -{" "}
-            {formatCurrency(table.maxBuyIn)}
+            Buy-in: {formatCurrency(table.min_buy_in)} -{" "}
+            {formatCurrency(table.max_buy_in)}
           </span>
         </div>
-        <Button asChild size="sm" className="w-full" disabled={isFull}>
+        <Button
+          asChild
+          size="sm"
+          className="w-full"
+          disabled={table.status === "closed"}
+        >
           <Link href={`/table/${table.id}`}>
-            {isFull ? "Spectate" : "Join Table"}
+            {table.status === "active" ? "Join Table" : "Open Table"}
           </Link>
         </Button>
       </CardContent>

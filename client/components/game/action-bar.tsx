@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 
 type ActionBarProps = {
   readonly isMyTurn: boolean;
-  readonly minBet?: number;
+  readonly minBet?: string;
   readonly onFold?: () => void;
   readonly onCheck?: () => void;
   readonly onCall?: () => void;
@@ -15,7 +15,7 @@ type ActionBarProps = {
 
 export function ActionBar({
   isMyTurn,
-  minBet = 0,
+  minBet = "0",
   onFold,
   onCheck,
   onCall,
@@ -55,7 +55,7 @@ export function ActionBar({
       <div className="flex items-center gap-1">
         <Input
           type="number"
-          placeholder={String(minBet)}
+          placeholder={minBet}
           value={raiseAmount}
           onChange={(e) => setRaiseAmount(e.target.value)}
           className="h-8 w-20 font-mono text-sm"

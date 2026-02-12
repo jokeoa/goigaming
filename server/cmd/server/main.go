@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -12,7 +13,11 @@ import (
 	"github.com/jokeoa/goigaming/internal/config"
 	"github.com/jokeoa/goigaming/internal/core/ports"
 	handler "github.com/jokeoa/goigaming/internal/handler/http"
+	wsHandler "github.com/jokeoa/goigaming/internal/handler/ws"
 	"github.com/jokeoa/goigaming/internal/repository/postgres"
+	"github.com/jokeoa/goigaming/internal/service/game"
+	rouletteService "github.com/jokeoa/goigaming/internal/service/roulette"
+	"github.com/jokeoa/goigaming/repository"
 	authService "github.com/jokeoa/goigaming/internal/service/auth"
 	userService "github.com/jokeoa/goigaming/internal/service/user"
 	walletService "github.com/jokeoa/goigaming/internal/service/wallet"
@@ -36,6 +41,13 @@ func main() {
 	userRepo := postgres.NewUserRepository(pool)
 	walletRepo := postgres.NewWalletRepository(pool)
 	txRepo := postgres.NewTransactionRepository(pool)
+	pokerTableRepo := postgres.NewPokerTableRepository(pool)
+	pokerPlayerRepo := postgres.NewPokerPlayerRepository(pool)
+	pokerHandRepo := postgres.NewPokerHandRepository(pool)
+	rouletteTableRepo := repository.NewRouletteTableRepository(pool)
+	rouletteTableRepoNew := postgres.NewRouletteTableRepo(pool)
+	rouletteRoundRepo := postgres.NewRouletteRoundRepo(pool)
+	rouletteBetRepo := postgres.NewRouletteBetRepo(pool)
 
 	authSvc := authService.NewService(
 		pool,
@@ -62,11 +74,51 @@ func main() {
 		},
 	)
 
+	wsHub := wsHandler.NewHub(slog.Default())
+	rngSvc := &game.SimpleRNGService{}
+	hubManager := game.NewHubManager(
+		ctx,
+		30*time.Second,
+		wsHub,
+		walletSvc,
+		rngSvc,
+		pokerHandRepo,
+		pokerPlayerRepo,
+		slog.Default(),
+	)
+	pokerSvc := game.NewService(
+		pool,
+		pokerTableRepo,
+		pokerPlayerRepo,
+		pokerHandRepo,
+		walletSvc,
+		userSvc,
+		hubManager,
+		func(db postgres.DBTX) ports.PokerPlayerRepository {
+			return postgres.NewPokerPlayerRepository(db)
+		},
+	)
+
+	rouletteSvc := rouletteService.NewService(
+		pool,
+		walletSvc,
+		rouletteTableRepoNew,
+		rouletteRoundRepo,
+		rouletteBetRepo,
+		func(db postgres.DBTX) ports.RouletteBetRepository {
+			return postgres.NewRouletteBetRepo(db)
+		},
+	)
+
 	authHandler := handler.NewAuthHandler(authSvc)
 	userHandler := handler.NewUserHandler(userSvc)
 	walletHandler := handler.NewWalletHandler(walletSvc)
+	adminHandler := handler.NewAdminHandler(pokerTableRepo, rouletteTableRepo)
+	pokerHandler := handler.NewPokerHandler(pokerSvc)
+	rouletteHandler := handler.NewRouletteHandler(rouletteSvc)
+	ws := wsHandler.NewHandler(wsHub, authSvc, slog.Default())
 
-	router := handler.NewRouter(authSvc, authHandler, userHandler, walletHandler)
+	router := handler.NewRouter(authSvc, authHandler, userHandler, walletHandler, adminHandler, pokerHandler, rouletteHandler, ws)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.ServerPort,

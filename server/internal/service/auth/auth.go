@@ -100,6 +100,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (domain.Tok
 	claims := jwt.MapClaims{
 		"sub":      user.ID.String(),
 		"username": user.Username,
+		"is_admin": user.IsAdmin,
 		"iat":      now.Unix(),
 		"exp":      now.Add(s.tokenTTL).Unix(),
 	}
@@ -144,9 +145,11 @@ func (s *Service) ValidateToken(tokenString string) (domain.TokenClaims, error) 
 	}
 
 	username, _ := claims["username"].(string)
+	isAdmin, _ := claims["is_admin"].(bool)
 
 	return domain.TokenClaims{
 		UserID:   userID,
 		Username: username,
+		IsAdmin:  isAdmin,
 	}, nil
 }

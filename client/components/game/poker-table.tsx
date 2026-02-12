@@ -7,89 +7,38 @@ import { PotDisplay } from "@/components/game/pot-display";
 import { Seat } from "@/components/game/seat";
 import { TableInfo } from "@/components/game/table-info";
 import { useGameStore } from "@/stores/game-store";
-import type {
-  Card,
-  GameStage,
-  PlayerInfo,
-  PokerTable as PokerTableType,
-} from "@/types/game";
-
-const mockTable: PokerTableType = {
-  id: "mock-1",
-  name: "Table Alpha",
-  maxPlayers: 6,
-  currentPlayers: 3,
-  smallBlind: 5,
-  bigBlind: 10,
-  minBuyIn: 100,
-  maxBuyIn: 1000,
-  stage: "flop",
-};
-
-const mockPlayers: readonly PlayerInfo[] = [
-  {
-    id: "p1",
-    username: "Alice",
-    seatIndex: 0,
-    chips: 450,
-    currentBet: 20,
-    isFolded: false,
-    isDealer: true,
-    isActive: true,
-  },
-  {
-    id: "p2",
-    username: "Bob",
-    seatIndex: 2,
-    chips: 780,
-    currentBet: 20,
-    isFolded: false,
-    isDealer: false,
-    isActive: true,
-  },
-  {
-    id: "p3",
-    username: "Charlie",
-    seatIndex: 4,
-    chips: 200,
-    currentBet: 0,
-    isFolded: true,
-    isDealer: false,
-    isActive: false,
-  },
-] as const;
-
-const mockCommunityCards: readonly Card[] = [
-  { suit: "hearts", rank: "A" },
-  { suit: "spades", rank: "K" },
-  { suit: "diamonds", rank: "7" },
-] as const;
-
-const mockHoleCards: readonly Card[] = [
-  { suit: "clubs", rank: "Q" },
-  { suit: "hearts", rank: "J" },
-] as const;
 
 export function PokerTableView() {
   const tableState = useGameStore((s) => s.tableState);
   const holeCards = useGameStore((s) => s.holeCards);
   const isConnected = useGameStore((s) => s.isConnected);
 
-  const table = tableState?.table ?? mockTable;
-  const players = tableState?.players ?? mockPlayers;
-  const communityCards = tableState?.communityCards ?? mockCommunityCards;
-  const pot = tableState?.pot ?? 60;
-  const stage: GameStage = tableState?.stage ?? "flop";
-  const currentTurn = tableState?.currentTurn ?? "p1";
-  const displayHoleCards = holeCards.length > 0 ? holeCards : mockHoleCards;
+  if (!tableState) {
+    return (
+      <div className="flex items-center justify-center rounded-lg border border-dashed border-border bg-card/50 p-12 text-sm text-muted-foreground">
+        Connecting to table...
+      </div>
+    );
+  }
 
-  const seats = Array.from({ length: table.maxPlayers }).map((_, i) =>
-    players.find((p) => p.seatIndex === i),
+  const maxPlayers = 6;
+  const players = tableState.players ?? [];
+  const communityCards = tableState.community_cards ?? [];
+  const seats = Array.from({ length: maxPlayers }).map((_, i) =>
+    players.find((p) => p.seat_number === i),
   );
 
   return (
     <div className="space-y-4">
-      <TableInfo table={table} stage={stage} isConnected={isConnected} />
+      <TableInfo
+        name={tableState.name}
+        smallBlind={tableState.small_blind}
+        bigBlind={tableState.big_blind}
+        maxPlayers={maxPlayers}
+        playerCount={players.length}
+        stage={tableState.stage}
+        isConnected={isConnected}
+      />
 
       <div className="relative rounded-2xl border border-border bg-felt/20 p-6">
         <div className="grid grid-cols-3 gap-4">
@@ -98,21 +47,21 @@ export function PokerTableView() {
             <Seat
               player={seats[1]}
               position={1}
-              isCurrentTurn={seats[1]?.id === currentTurn}
+              isCurrentTurn={seats[1]?.user_id === tableState.current_turn}
             />
           </div>
           <div className="flex justify-center">
             <Seat
               player={seats[2]}
               position={2}
-              isCurrentTurn={seats[2]?.id === currentTurn}
+              isCurrentTurn={seats[2]?.user_id === tableState.current_turn}
             />
           </div>
           <div className="flex justify-center">
             <Seat
               player={seats[3]}
               position={3}
-              isCurrentTurn={seats[3]?.id === currentTurn}
+              isCurrentTurn={seats[3]?.user_id === tableState.current_turn}
             />
           </div>
 
@@ -121,19 +70,19 @@ export function PokerTableView() {
             <Seat
               player={seats[0]}
               position={0}
-              isCurrentTurn={seats[0]?.id === currentTurn}
+              isCurrentTurn={seats[0]?.user_id === tableState.current_turn}
             />
           </div>
           <div className="flex flex-col items-center justify-center gap-3">
             <CommunityCards cards={communityCards} />
-            <PotDisplay amount={pot} />
+            <PotDisplay amount={tableState.pot} />
           </div>
           <div className="flex items-center justify-center">
-            {table.maxPlayers > 4 && (
+            {maxPlayers > 4 && (
               <Seat
                 player={seats[4]}
                 position={4}
-                isCurrentTurn={seats[4]?.id === currentTurn}
+                isCurrentTurn={seats[4]?.user_id === tableState.current_turn}
               />
             )}
           </div>
@@ -141,11 +90,11 @@ export function PokerTableView() {
           {/* Bottom row */}
           <div />
           <div className="flex justify-center">
-            {table.maxPlayers > 5 && (
+            {maxPlayers > 5 && (
               <Seat
                 player={seats[5]}
                 position={5}
-                isCurrentTurn={seats[5]?.id === currentTurn}
+                isCurrentTurn={seats[5]?.user_id === tableState.current_turn}
               />
             )}
           </div>
@@ -154,18 +103,20 @@ export function PokerTableView() {
       </div>
 
       {/* Hole cards */}
-      <div className="flex items-center justify-center gap-2">
-        <span className="text-xs text-muted-foreground mr-2">Your hand:</span>
-        {displayHoleCards.map((card, i) => (
-          <PlayingCard
-            key={`hole-${card.suit}-${card.rank}-${i}`}
-            card={card}
-          />
-        ))}
-      </div>
+      {holeCards.length > 0 && (
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-xs text-muted-foreground mr-2">Your hand:</span>
+          {holeCards.map((card, i) => (
+            <PlayingCard
+              key={`hole-${card.suit}-${card.rank}-${i}`}
+              card={card}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Action bar */}
-      <ActionBar isMyTurn={currentTurn === "p1"} minBet={table.bigBlind} />
+      <ActionBar isMyTurn={false} minBet={tableState.big_blind} />
     </div>
   );
 }

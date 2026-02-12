@@ -71,6 +71,18 @@ func mapDomainError(err error) (int, string) {
 		return http.StatusConflict, "seat is taken"
 	case errors.Is(err, domain.ErrMinPlayersRequired):
 		return http.StatusBadRequest, "minimum 2 players required"
+	case errors.Is(err, domain.ErrForbidden):
+		return http.StatusForbidden, "forbidden"
+	case errors.Is(err, domain.ErrRoundNotFound):
+		return http.StatusNotFound, "round not found"
+	case errors.Is(err, domain.ErrBettingClosed):
+		return http.StatusUnprocessableEntity, "betting is closed"
+	case errors.Is(err, domain.ErrInvalidBetType):
+		return http.StatusBadRequest, "invalid bet type"
+	case errors.Is(err, domain.ErrBetAmountOutOfRange):
+		return http.StatusBadRequest, "bet amount out of range"
+	case errors.Is(err, domain.ErrTableNotActive):
+		return http.StatusBadRequest, "table is not active"
 	default:
 		return http.StatusInternalServerError, "internal server error"
 	}
