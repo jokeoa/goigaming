@@ -64,3 +64,26 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	respondSuccess(c, http.StatusOK, tokenPair)
 }
+
+type refreshRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	var req refreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, Response{
+			Success: false,
+			Error:   "invalid request: refresh_token is required",
+		})
+		return
+	}
+
+	tokenPair, err := h.authService.RefreshToken(c.Request.Context(), req.RefreshToken)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondSuccess(c, http.StatusOK, tokenPair)
+}

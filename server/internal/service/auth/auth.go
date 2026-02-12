@@ -96,24 +96,27 @@ func (s *Service) Login(ctx context.Context, email, password string) (domain.Tok
 		return domain.TokenPair{}, domain.ErrInvalidCredentials
 	}
 
-	now := time.Now()
-	claims := jwt.MapClaims{
-		"sub":      user.ID.String(),
-		"username": user.Username,
-		"iat":      now.Unix(),
-		"exp":      now.Add(s.tokenTTL).Unix(),
+	accessToken, err := s.generateAccessToken(user)
+	if err != nil {
+		return domain.TokenPair{}, err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signed, err := token.SignedString(s.jwtSecret)
+	refreshToken, err := s.generateRefreshToken(user)
 	if err != nil {
-		return domain.TokenPair{}, fmt.Errorf("AuthService.Login sign token: %w", err)
+		return domain.TokenPair{}, err
+	}
+
+	user.RefreshToken = &refreshToken
+	_, err = s.userRepo.Update(ctx, user)
+	if err != nil {
+		return domain.TokenPair{}, fmt.Errorf("save refresh token: %w", err)
 	}
 
 	return domain.TokenPair{
-		AccessToken: signed,
-		TokenType:   "Bearer",
-		ExpiresIn:   int64(s.tokenTTL.Seconds()),
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    int64(s.tokenTTL.Seconds()),
 	}, nil
 }
 
@@ -149,4 +152,101 @@ func (s *Service) ValidateToken(tokenString string) (domain.TokenClaims, error) 
 		UserID:   userID,
 		Username: username,
 	}, nil
+}
+
+func (s *Service) RefreshToken(ctx context.Context, refreshToken string) (domain.TokenPair, error) {
+	claims, err := s.validateRefreshToken(refreshToken)
+	if err != nil {
+		return domain.TokenPair{}, domain.ErrInvalidToken
+	}
+
+	user, err := s.userRepo.FindByID(ctx, claims.UserID)
+	if err != nil {
+		return domain.TokenPair{}, domain.ErrUserNotFound
+	}
+
+	if user.RefreshToken == nil || *user.RefreshToken != refreshToken {
+		return domain.TokenPair{}, domain.ErrInvalidToken
+	}
+
+	newAccessToken, err := s.generateAccessToken(user)
+	if err != nil {
+		return domain.TokenPair{}, err
+	}
+
+	newRefreshToken, err := s.generateRefreshToken(user)
+	if err != nil {
+		return domain.TokenPair{}, err
+	}
+
+	user.RefreshToken = &newRefreshToken
+	_, err = s.userRepo.Update(ctx, user)
+	if err != nil {
+		return domain.TokenPair{}, err
+	}
+
+	return domain.TokenPair{
+		AccessToken:  newAccessToken,
+		RefreshToken: newRefreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    int64(s.tokenTTL.Seconds()),
+	}, nil
+}
+
+func (s *Service) validateRefreshToken(tokenString string) (domain.TokenClaims, error) {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return s.jwtSecret, nil
+	})
+	if err != nil {
+		return domain.TokenClaims{}, domain.ErrInvalidToken
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return domain.TokenClaims{}, domain.ErrInvalidToken
+	}
+
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		return domain.TokenClaims{}, domain.ErrInvalidToken
+	}
+
+	userID, err := uuid.Parse(sub)
+	if err != nil {
+		return domain.TokenClaims{}, domain.ErrInvalidToken
+	}
+
+	username, _ := claims["username"].(string)
+
+	return domain.TokenClaims{
+		UserID:   userID,
+		Username: username,
+	}, nil
+}
+
+func (s *Service) generateAccessToken(user domain.User) (string, error) {
+	now := time.Now()
+	claims := jwt.MapClaims{
+		"sub":      user.ID.String(),
+		"username": user.Username,
+		"iat":      now.Unix(),
+		"exp":      now.Add(15 * time.Minute).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(s.jwtSecret)
+}
+
+func (s *Service) generateRefreshToken(user domain.User) (string, error) {
+	now := time.Now()
+	claims := jwt.MapClaims{
+		"sub":      user.ID.String(),
+		"username": user.Username,
+		"iat":      now.Unix(),
+		"exp":      now.Add(7 * 24 * time.Hour).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(s.jwtSecret)
 }
