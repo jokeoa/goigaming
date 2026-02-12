@@ -61,6 +61,9 @@ jobs:
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            ${{ matrix.name == 'client' && format('NEXT_PUBLIC_API_URL={0}', secrets.NEXT_PUBLIC_API_URL) || '' }}
+            ${{ matrix.name == 'client' && format('NEXT_PUBLIC_WS_URL={0}', secrets.NEXT_PUBLIC_WS_URL) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
