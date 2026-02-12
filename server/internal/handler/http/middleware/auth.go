@@ -11,6 +11,7 @@ import (
 const (
 	ContextKeyUserID   = "user_id"
 	ContextKeyUsername = "username"
+	ContextKeyIsAdmin  = "is_admin"
 )
 
 func Auth(authService ports.AuthService) gin.HandlerFunc {
@@ -44,6 +45,7 @@ func Auth(authService ports.AuthService) gin.HandlerFunc {
 
 		c.Set(ContextKeyUserID, claims.UserID)
 		c.Set(ContextKeyUsername, claims.Username)
+		c.Set(ContextKeyIsAdmin, claims.IsAdmin)
 		c.Next()
 	}
 }

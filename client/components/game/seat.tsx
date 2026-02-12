@@ -1,9 +1,9 @@
 import { PlayerCard } from "@/components/game/player-card";
 import { cn } from "@/lib/utils";
-import type { PlayerInfo } from "@/types/game";
+import type { WSPlayerInfo } from "@/types/game";
 
 type SeatProps = {
-  readonly player?: PlayerInfo;
+  readonly player?: WSPlayerInfo;
   readonly position: number;
   readonly isCurrentTurn: boolean;
   readonly className?: string;

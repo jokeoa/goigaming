@@ -1,0 +1,8 @@
+#!/bin/bash
+# Remove Cursor AI co-author trailer from commit messages
+# Usage: copy to .git/hooks/prepare-commit-msg (run scripts/setup-git-hooks.sh)
+# macOS: sed -i ''; Linux: sed -i
+case "$(uname)" in
+  Darwin) sed -i '' '/cursoragent@cursor\.com/d' "$1" ;;
+  *)      sed -i '/cursoragent@cursor\.com/d' "$1" ;;
+esac

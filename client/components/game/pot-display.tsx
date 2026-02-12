@@ -1,7 +1,7 @@
 import { formatCurrency } from "@/lib/utils";
 
 type PotDisplayProps = {
-  readonly amount: number;
+  readonly amount: string;
 };
 
 export function PotDisplay({ amount }: PotDisplayProps) {

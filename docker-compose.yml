@@ -63,6 +63,18 @@ services:
     networks:
       - app_net
 
+  migrate:
+    image: migrate/migrate:v4.18.1
+    profiles: ["tools"]
+    volumes:
+      - ./server/migrations:/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_net
+    command: ["-path", "/migrations", "-database", "postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable", "up"]
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped

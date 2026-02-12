@@ -91,6 +91,34 @@ func (r *PokerTableRepository) FindActive(ctx context.Context) ([]domain.PokerTa
 	return tables, rows.Err()
 }
 
+func (r *PokerTableRepository) FindAll(ctx context.Context) ([]domain.PokerTable, error) {
+	query := `
+		SELECT id, name, small_blind, big_blind, min_buy_in, max_buy_in, max_players, status, created_at
+		FROM poker_tables
+		ORDER BY created_at DESC
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("PokerTableRepository.FindAll: %w", err)
+	}
+	defer rows.Close()
+
+	var tables []domain.PokerTable
+	for rows.Next() {
+		var t domain.PokerTable
+		if err := rows.Scan(
+			&t.ID, &t.Name, &t.SmallBlind, &t.BigBlind,
+			&t.MinBuyIn, &t.MaxBuyIn, &t.MaxPlayers, &t.Status, &t.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("PokerTableRepository.FindAll scan: %w", err)
+		}
+		tables = append(tables, t)
+	}
+
+	return tables, rows.Err()
+}
+
 func (r *PokerTableRepository) Update(ctx context.Context, table domain.PokerTable) (domain.PokerTable, error) {
 	query := `
 		UPDATE poker_tables
@@ -116,4 +144,16 @@ func (r *PokerTableRepository) Update(ctx context.Context, table domain.PokerTab
 	}
 
 	return t, nil
+}
+
+func (r *PokerTableRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status domain.TableStatus) error {
+	query := `UPDATE poker_tables SET status = $1 WHERE id = $2`
+	tag, err := r.db.Exec(ctx, query, status, id)
+	if err != nil {
+		return fmt.Errorf("PokerTableRepository.UpdateStatus: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrTableNotFound
+	}
+	return nil
 }
