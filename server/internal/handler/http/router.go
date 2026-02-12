@@ -40,14 +40,6 @@ func NewRouter(
 			wallet.GET("/transactions", walletHandler.GetTransactions)
 		}
 
-		betting := protected.Group("/betting")  
-	{
-		    betting.GET("/events", bettingHandler.GetEvents)
-		    betting.POST("/bets", bettingHandler.PlaceBet)
-		    betting.GET("/bets", bettingHandler.GetBets)
-		    betting.DELETE("/bets/:id", bettingHandler.CancelBet)
-	    }
-		
 	}
 
 	return r
