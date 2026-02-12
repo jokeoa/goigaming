@@ -1,0 +1,304 @@
+{{template "layouts/base.html" .}}
+
+{{define "title"}}Roulette - iGaming{{end}}
+
+{{define "head"}}
+<style>
+    .roulette-wheel {
+        width: 400px;
+        height: 400px;
+        border-radius: 50%;
+        background: conic-gradient(
+            from 0deg,
+            #dc2626 0deg 10deg,
+            #000 10deg 20deg,
+            #dc2626 20deg 30deg,
+            #000 30deg 40deg
+        );
+        border: 10px solid #fbbf24;
+        position: relative;
+    }
+    
+    .roulette-number {
+        @apply px-3 py-2 rounded cursor-pointer transition-all;
+    }
+    
+    .roulette-number:hover {
+        @apply transform scale-110;
+    }
+    
+    .bet-chip {
+        @apply inline-block px-4 py-2 rounded-full font-bold text-sm;
+    }
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-2">🎡 European Roulette</h1>
+        <p class="text-gray-400">Place your bets and spin to win!</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Betting Board -->
+        <div class="lg:col-span-2">
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-4">Betting Board</h2>
+                
+                <!-- Numbers Grid -->
+                <div class="grid grid-cols-13 gap-1 mb-6">
+                    <!-- Zero -->
+                    <div class="col-span-1 row-span-3">
+                        <button class="roulette-number bg-green-600 w-full h-full text-2xl font-bold"
+                                onclick="selectBet('straight', '0')">
+                            0
+                        </button>
+                    </div>
+                    
+                    <!-- Numbers 1-36 -->
+                    {{range $i := iterate 1 37}}
+                    <button class="roulette-number {{if isRed $i}}bg-red-600{{else}}bg-black{{end}} h-16 font-bold"
+                            onclick="selectBet('straight', '{{$i}}')">
+                        {{$i}}
+                    </button>
+                    {{end}}
+                </div>
+                
+                <!-- Outside Bets -->
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <button class="bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold"
+                            onclick="selectBet('dozen', '1')">
+                        1st 12
+                    </button>
+                    <button class="bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold"
+                            onclick="selectBet('dozen', '2')">
+                        2nd 12
+                    </button>
+                    <button class="bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold"
+                            onclick="selectBet('dozen', '3')">
+                        3rd 12
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-6 gap-4">
+                    <button class="bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold"
+                            onclick="selectBet('low', 'low')">
+                        1-18
+                    </button>
+                    <button class="bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold"
+                            onclick="selectBet('even', 'even')">
+                        EVEN
+                    </button>
+                    <button class="bg-red-600 hover:bg-red-700 py-3 rounded font-semibold"
+                            onclick="selectBet('red', 'red')">
+                        RED
+                    </button>
+                    <button class="bg-black hover:bg-gray-900 py-3 rounded font-semibold"
+                            onclick="selectBet('black', 'black')">
+                        BLACK
+                    </button>
+                    <button class="bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold"
+                            onclick="selectBet('odd', 'odd')">
+                        ODD
+                    </button>
+                    <button class="bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold"
+                            onclick="selectBet('high', 'high')">
+                        19-36
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Game Info -->
+        <div class="space-y-6">
+            <!-- Current Round -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h3 class="text-xl font-bold mb-4">Current Round</h3>
+                {{if .CurrentRound}}
+                <div class="space-y-2">
+                    <p>Round #{{.CurrentRound.RoundNumber}}</p>
+                    <p class="text-sm text-gray-400">
+                        Betting ends: <span id="countdown">30s</span>
+                    </p>
+                    
+                    {{if .CurrentRound.Result}}
+                    <div class="text-center py-6">
+                        <div class="text-5xl font-bold {{if eq .CurrentRound.ResultColor "red"}}text-red-500{{else if eq .CurrentRound.ResultColor "black"}}text-white{{else}}text-green-500{{end}}">
+                            {{.CurrentRound.Result}}
+                        </div>
+                        <p class="text-gray-400 mt-2 uppercase">{{.CurrentRound.ResultColor}}</p>
+                    </div>
+                    {{end}}
+                </div>
+                {{else}}
+                <p class="text-gray-400">No active round</p>
+                <button class="mt-4 w-full bg-purple-600 hover:bg-purple-700 py-2 rounded font-semibold"
+                        onclick="createRound()">
+                    Start New Round
+                </button>
+                {{end}}
+            </div>
+            
+            <!-- Your Bets -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h3 class="text-xl font-bold mb-4">Your Bets</h3>
+                <div id="bet-list" class="space-y-2">
+                    {{if .YourBets}}
+                    {{range .YourBets}}
+                    <div class="flex justify-between items-center bg-gray-700 p-3 rounded">
+                        <div>
+                            <span class="font-semibold">{{.BetType}}</span>
+                            <span class="text-gray-400 text-sm">{{.BetValue}}</span>
+                        </div>
+                        <div>
+                            <span class="bet-chip {{if eq .Status "won"}}bg-green-600{{else if eq .Status "lost"}}bg-red-600{{else}}bg-yellow-600{{end}}">
+                                ${{.Amount | formatDecimal}}
+                            </span>
+                        </div>
+                    </div>
+                    {{end}}
+                    {{else}}
+                    <p class="text-gray-400 text-sm">No bets placed yet</p>
+                    {{end}}
+                </div>
+                
+                <!-- Bet Controls -->
+                <div class="mt-4 space-y-2">
+                    <label class="block text-sm text-gray-400">Bet Amount</label>
+                    <input type="number" id="bet-amount" value="10" min="1" step="1"
+                           class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2">
+                    
+                    <button id="place-bet-btn" 
+                            class="w-full bg-green-600 hover:bg-green-700 py-2 rounded font-semibold disabled:bg-gray-600"
+                            onclick="placeBet()" disabled>
+                        Place Bet
+                    </button>
+                    
+                    <button class="w-full bg-red-600 hover:bg-red-700 py-2 rounded font-semibold"
+                            onclick="clearBets()">
+                        Clear Bets
+                    </button>
+                </div>
+            </div>
+            
+            <!-- History -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h3 class="text-xl font-bold mb-4">Recent Results</h3>
+                <div class="flex flex-wrap gap-2">
+                    {{if .History}}
+                    {{range .History}}
+                    <div class="bet-chip {{if eq .ResultColor "red"}}bg-red-600{{else if eq .ResultColor "black"}}bg-black{{else}}bg-green-600{{end}}">
+                        {{.Result}}
+                    </div>
+                    {{end}}
+                    {{else}}
+                    <p class="text-gray-400 text-sm">No history yet</p>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+let selectedBetType = null;
+let selectedBetValue = null;
+
+function selectBet(type, value) {
+    selectedBetType = type;
+    selectedBetValue = value;
+    document.getElementById('place-bet-btn').disabled = false;
+    
+    // Highlight selected
+    document.querySelectorAll('.roulette-number, button').forEach(btn => {
+        btn.classList.remove('ring-4', 'ring-yellow-400');
+    });
+    event.target.classList.add('ring-4', 'ring-yellow-400');
+}
+
+async function placeBet() {
+    if (!selectedBetType || !selectedBetValue) {
+        alert('Please select a bet first');
+        return;
+    }
+    
+    const amount = document.getElementById('bet-amount').value;
+    
+    try {
+        const response = await fetch('/api/v1/roulette/bets', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                round_id: '{{.CurrentRound.ID}}',
+                bet_type: selectedBetType,
+                bet_value: selectedBetValue,
+                amount: parseFloat(amount)
+            })
+        });
+        
+        if (response.ok) {
+            alert('Bet placed successfully!');
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.message);
+        }
+    } catch (error) {
+        alert('Failed to place bet: ' + error.message);
+    }
+}
+
+function clearBets() {
+    selectedBetType = null;
+    selectedBetValue = null;
+    document.getElementById('place-bet-btn').disabled = true;
+    
+    document.querySelectorAll('.roulette-number, button').forEach(btn => {
+        btn.classList.remove('ring-4', 'ring-yellow-400');
+    });
+}
+
+async function createRound() {
+    try {
+        const response = await fetch('/api/v1/roulette/rounds', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (error) {
+        alert('Failed to create round');
+    }
+}
+
+// Countdown timer
+{{if .CurrentRound}}
+{{if .CurrentRound.BettingEndsAt}}
+let endTime = new Date('{{.CurrentRound.BettingEndsAt}}').getTime();
+setInterval(() => {
+    let now = new Date().getTime();
+    let distance = endTime - now;
+    
+    if (distance < 0) {
+        document.getElementById('countdown').textContent = 'Betting closed';
+        document.getElementById('place-bet-btn').disabled = true;
+    } else {
+        let seconds = Math.floor(distance / 1000);
+        document.getElementById('countdown').textContent = seconds + 's';
+    }
+}, 1000);
+{{end}}
+{{end}}
+</script>
+{{end}}
