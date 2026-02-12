@@ -23,12 +23,12 @@ func (r *UserRepository) Create(ctx context.Context, user domain.User) (domain.U
 	query := `
 		INSERT INTO users (username, email, password_hash)
 		VALUES ($1, $2, $3)
-		RETURNING id, username, email, password_hash, created_at, updated_at
+		RETURNING id, username, email, password_hash, is_admin, created_at, updated_at
 	`
 
 	var u domain.User
 	err := r.db.QueryRow(ctx, query, user.Username, user.Email, user.PasswordHash).Scan(
-		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt,
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.IsAdmin, &u.CreatedAt, &u.UpdatedAt,
 	)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -43,14 +43,14 @@ func (r *UserRepository) Create(ctx context.Context, user domain.User) (domain.U
 
 func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	query := `
-		SELECT id, username, email, password_hash, created_at, updated_at
+		SELECT id, username, email, password_hash, is_admin, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
 
 	var u domain.User
 	err := r.db.QueryRow(ctx, query, id).Scan(
-		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt,
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.IsAdmin, &u.CreatedAt, &u.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -64,14 +64,14 @@ func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (domain.Use
 
 func (r *UserRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
 	query := `
-		SELECT id, username, email, password_hash, created_at, updated_at
+		SELECT id, username, email, password_hash, is_admin, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`
 
 	var u domain.User
 	err := r.db.QueryRow(ctx, query, email).Scan(
-		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt,
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.IsAdmin, &u.CreatedAt, &u.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -85,14 +85,14 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (domain.
 
 func (r *UserRepository) FindByUsername(ctx context.Context, username string) (domain.User, error) {
 	query := `
-		SELECT id, username, email, password_hash, created_at, updated_at
+		SELECT id, username, email, password_hash, is_admin, created_at, updated_at
 		FROM users
 		WHERE username = $1
 	`
 
 	var u domain.User
 	err := r.db.QueryRow(ctx, query, username).Scan(
-		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt,
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.IsAdmin, &u.CreatedAt, &u.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -107,14 +107,14 @@ func (r *UserRepository) FindByUsername(ctx context.Context, username string) (d
 func (r *UserRepository) Update(ctx context.Context, user domain.User) (domain.User, error) {
 	query := `
 		UPDATE users
-		SET username = $1, email = $2, password_hash = $3, updated_at = NOW()
-		WHERE id = $4
-		RETURNING id, username, email, password_hash, created_at, updated_at
+		SET username = $1, email = $2, password_hash = $3, is_admin = $4, updated_at = NOW()
+		WHERE id = $5
+		RETURNING id, username, email, password_hash, is_admin, created_at, updated_at
 	`
 
 	var u domain.User
-	err := r.db.QueryRow(ctx, query, user.Username, user.Email, user.PasswordHash, user.ID).Scan(
-		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt,
+	err := r.db.QueryRow(ctx, query, user.Username, user.Email, user.PasswordHash, user.IsAdmin, user.ID).Scan(
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.IsAdmin, &u.CreatedAt, &u.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
