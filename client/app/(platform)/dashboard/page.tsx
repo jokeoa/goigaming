@@ -1,6 +1,7 @@
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { TableList } from "@/components/dashboard/table-list";
+import { RouletteTableList } from "@/components/roulette/roulette-table-list";
 import { PageHeader } from "@/components/shared/page-header";
 
 export default function DashboardPage() {
@@ -13,8 +14,14 @@ export default function DashboardPage() {
       <StatsCards />
       <QuickActions />
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight">Open Tables</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Poker Tables</h2>
         <TableList />
+      </div>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Roulette Tables
+        </h2>
+        <RouletteTableList />
       </div>
     </div>
   );

@@ -1,4 +1,9 @@
-import { ArrowDownToLine, ArrowUpFromLine, User } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  CircleDot,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +25,12 @@ export function QuickActions() {
           <Link href="/wallet">
             <ArrowUpFromLine className="mr-2 h-3.5 w-3.5" />
             Withdraw
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/roulette">
+            <CircleDot className="mr-2 h-3.5 w-3.5" />
+            Play Roulette
           </Link>
         </Button>
         <Button asChild variant="outline" size="sm">
