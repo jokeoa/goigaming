@@ -39,6 +39,7 @@ func NewRouter(
 			wallet.POST("/withdraw", walletHandler.Withdraw)
 			wallet.GET("/transactions", walletHandler.GetTransactions)
 		}
+
 	}
 
 	return r
