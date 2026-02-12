@@ -2,9 +2,13 @@ package repository
 
 import (
     "context"
+    "errors"
     "fmt"
 
+    "github.com/google/uuid"
+    "github.com/jackc/pgx/v5"
     "github.com/jackc/pgx/v5/pgxpool"
+    "github.com/jokeoa/goigaming/internal/core/domain"
     "github.com/jokeoa/goigaming/models"
 )
 
@@ -32,16 +36,34 @@ func (r *RouletteTableRepository) Create(ctx context.Context, table models.Roule
     return t, nil
 }
 
-func (r *RouletteTableRepository) FindActive(ctx context.Context) ([]models.RouletteTable, error) {
+func (r *RouletteTableRepository) FindByID(ctx context.Context, id uuid.UUID) (models.RouletteTable, error) {
     query := `
         SELECT id, name, min_bet, max_bet, status, created_at
         FROM roulette_tables
-        WHERE status = 'active'
+        WHERE id = $1
+    `
+    var t models.RouletteTable
+    err := r.db.QueryRow(ctx, query, id).Scan(
+        &t.ID, &t.Name, &t.MinBet, &t.MaxBet, &t.Status, &t.CreatedAt,
+    )
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return t, domain.ErrTableNotFound
+        }
+        return t, fmt.Errorf("RouletteTableRepository.FindByID: %w", err)
+    }
+    return t, nil
+}
+
+func (r *RouletteTableRepository) FindAll(ctx context.Context) ([]models.RouletteTable, error) {
+    query := `
+        SELECT id, name, min_bet, max_bet, status, created_at
+        FROM roulette_tables
         ORDER BY created_at ASC
     `
     rows, err := r.db.Query(ctx, query)
     if err != nil {
-        return nil, fmt.Errorf("RouletteTableRepository.FindActive: %w", err)
+        return nil, fmt.Errorf("RouletteTableRepository.FindAll: %w", err)
     }
     defer rows.Close()
 
@@ -49,7 +71,7 @@ func (r *RouletteTableRepository) FindActive(ctx context.Context) ([]models.Roul
     for rows.Next() {
         var t models.RouletteTable
         if err := rows.Scan(&t.ID, &t.Name, &t.MinBet, &t.MaxBet, &t.Status, &t.CreatedAt); err != nil {
-            return nil, fmt.Errorf("RouletteTableRepository.FindActive scan: %w", err)
+            return nil, fmt.Errorf("RouletteTableRepository.FindAll scan: %w", err)
         }
         tables = append(tables, t)
     }
@@ -71,4 +93,16 @@ func (r *RouletteTableRepository) Update(ctx context.Context, table models.Roule
         return t, fmt.Errorf("RouletteTableRepository.Update: %w", err)
     }
     return t, nil
+}
+
+func (r *RouletteTableRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
+    query := `UPDATE roulette_tables SET status = $1 WHERE id = $2`
+    tag, err := r.db.Exec(ctx, query, status, id)
+    if err != nil {
+        return fmt.Errorf("RouletteTableRepository.UpdateStatus: %w", err)
+    }
+    if tag.RowsAffected() == 0 {
+        return domain.ErrTableNotFound
+    }
+    return nil
 }
