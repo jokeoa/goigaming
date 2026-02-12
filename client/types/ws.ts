@@ -1,20 +1,19 @@
 export type WSMessageType =
+  | "table_state"
+  | "cards_dealt"
+  | "player_acted"
+  | "community_cards"
+  | "hand_result"
   | "player_joined"
   | "player_left"
-  | "game_started"
-  | "card_dealt"
-  | "player_action"
-  | "community_cards"
-  | "pot_updated"
-  | "round_ended"
-  | "game_ended"
-  | "error";
+  | "turn_changed"
+  | "new_hand"
+  | "error"
+  | "pot_updated";
 
 export type WSMessage = {
-  readonly type: string;
-  readonly game_id: string;
-  readonly message: string;
-  readonly timestamp: string;
+  readonly type: WSMessageType;
+  readonly payload: unknown;
 };
 
 export type WSPlayerAction = "fold" | "check" | "call" | "raise" | "all_in";

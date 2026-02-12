@@ -1,9 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
-import type { GameStage, PokerTable } from "@/types/game";
+import type { GameStage } from "@/types/game";
 
 type TableInfoProps = {
-  readonly table: PokerTable;
+  readonly name: string;
+  readonly smallBlind: string;
+  readonly bigBlind: string;
+  readonly maxPlayers: number;
+  readonly playerCount: number;
   readonly stage: GameStage;
   readonly isConnected: boolean;
 };
@@ -15,24 +19,32 @@ const stageLabels: Record<GameStage, string> = {
   turn: "Turn",
   river: "River",
   showdown: "Showdown",
+  complete: "Complete",
 } as const;
 
-export function TableInfo({ table, stage, isConnected }: TableInfoProps) {
+export function TableInfo({
+  name,
+  smallBlind,
+  bigBlind,
+  maxPlayers,
+  playerCount,
+  stage,
+  isConnected,
+}: TableInfoProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 text-sm">
       <div className="flex items-center gap-3">
-        <span className="font-medium">{table.name}</span>
+        <span className="font-medium">{name}</span>
         <Badge variant="outline" className="text-xs">
           {stageLabels[stage]}
         </Badge>
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span>
-          Blinds: {formatCurrency(table.smallBlind)}/
-          {formatCurrency(table.bigBlind)}
+          Blinds: {formatCurrency(smallBlind)}/{formatCurrency(bigBlind)}
         </span>
         <span>
-          Players: {table.currentPlayers}/{table.maxPlayers}
+          Players: {playerCount}/{maxPlayers}
         </span>
         <div className="flex items-center gap-1">
           <div

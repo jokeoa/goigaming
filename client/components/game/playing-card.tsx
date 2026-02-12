@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Card } from "@/types/game";
+import type { Card, Suit } from "@/types/game";
 
 type PlayingCardProps = {
   readonly card?: Card;
@@ -7,18 +7,18 @@ type PlayingCardProps = {
   readonly className?: string;
 };
 
-const suitSymbols = {
-  hearts: "\u2665",
-  diamonds: "\u2666",
-  clubs: "\u2663",
-  spades: "\u2660",
+const suitSymbols: Record<Suit, string> = {
+  h: "\u2665",
+  d: "\u2666",
+  c: "\u2663",
+  s: "\u2660",
 } as const;
 
-const suitColors = {
-  hearts: "text-suit-hearts",
-  diamonds: "text-suit-diamonds",
-  clubs: "text-suit-clubs",
-  spades: "text-suit-spades",
+const suitColors: Record<Suit, string> = {
+  h: "text-suit-hearts",
+  d: "text-suit-diamonds",
+  c: "text-suit-clubs",
+  s: "text-suit-spades",
 } as const;
 
 export function PlayingCard({ card, faceDown, className }: PlayingCardProps) {

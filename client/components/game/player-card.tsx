@@ -1,19 +1,21 @@
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency } from "@/lib/utils";
-import type { PlayerInfo } from "@/types/game";
+import type { WSPlayerInfo } from "@/types/game";
 
 type PlayerCardProps = {
-  readonly player: PlayerInfo;
+  readonly player: WSPlayerInfo;
   readonly isCurrentTurn: boolean;
 };
 
 export function PlayerCard({ player, isCurrentTurn }: PlayerCardProps) {
+  const isFolded = player.status === "folded";
+
   return (
     <div
       className={cn(
         "flex flex-col items-center gap-1 rounded-lg border bg-card p-2 text-center transition-colors",
         isCurrentTurn && "border-primary ring-1 ring-primary",
-        player.isFolded && "opacity-50",
+        isFolded && "opacity-50",
         !isCurrentTurn && "border-border",
       )}
     >
@@ -21,7 +23,7 @@ export function PlayerCard({ player, isCurrentTurn }: PlayerCardProps) {
         <span className="text-xs font-medium truncate max-w-[72px]">
           {player.username}
         </span>
-        {player.isDealer && (
+        {player.is_dealer && (
           <Badge
             variant="outline"
             className="h-4 px-1 text-[10px] text-gold border-gold"
@@ -31,16 +33,14 @@ export function PlayerCard({ player, isCurrentTurn }: PlayerCardProps) {
         )}
       </div>
       <span className="text-xs font-mono text-muted-foreground">
-        {formatCurrency(player.chips)}
+        {formatCurrency(player.stack)}
       </span>
-      {player.currentBet > 0 && (
+      {Number.parseFloat(player.bet_amount) > 0 && (
         <span className="text-[10px] font-mono text-primary">
-          Bet: {formatCurrency(player.currentBet)}
+          Bet: {formatCurrency(player.bet_amount)}
         </span>
       )}
-      {player.isFolded && (
-        <span className="text-[10px] text-destructive">Folded</span>
-      )}
+      {isFolded && <span className="text-[10px] text-destructive">Folded</span>}
     </div>
   );
 }
