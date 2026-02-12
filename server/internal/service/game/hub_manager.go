@@ -21,9 +21,11 @@ type HubManager struct {
 	handRepo    ports.PokerHandRepository
 	playerRepo  ports.PokerPlayerRepository
 	logger      *slog.Logger
+	baseCtx     context.Context
 }
 
 func NewHubManager(
+	baseCtx context.Context,
 	turnTimeout time.Duration,
 	broadcaster ports.Broadcaster,
 	walletSvc ports.WalletService,
@@ -41,6 +43,7 @@ func NewHubManager(
 		handRepo:    handRepo,
 		playerRepo:  playerRepo,
 		logger:      logger,
+		baseCtx:     baseCtx,
 	}
 }
 
@@ -65,8 +68,12 @@ func (m *HubManager) GetOrCreateHub(ctx context.Context, table domain.PokerTable
 
 	m.hubs[table.ID] = hub
 
+	runCtx := m.baseCtx
+	if runCtx == nil {
+		runCtx = ctx
+	}
 	go func() {
-		hub.Run(ctx)
+		hub.Run(runCtx)
 		m.mu.Lock()
 		delete(m.hubs, table.ID)
 		m.mu.Unlock()
@@ -91,8 +98,9 @@ func (m *HubManager) RemoveHub(tableID uuid.UUID) {
 
 	if hub != nil {
 		resultCh := make(chan HubResult, 1)
-		hub.Send(HubEvent{Type: EventShutdown, ResultCh: resultCh})
-		<-resultCh
+		if err := hub.Send(HubEvent{Type: EventShutdown, ResultCh: resultCh}); err == nil {
+			<-resultCh
+		}
 	}
 }
 
@@ -107,7 +115,8 @@ func (m *HubManager) ShutdownAll() {
 
 	for _, hub := range hubsCopy {
 		resultCh := make(chan HubResult, 1)
-		hub.Send(HubEvent{Type: EventShutdown, ResultCh: resultCh})
-		<-resultCh
+		if err := hub.Send(HubEvent{Type: EventShutdown, ResultCh: resultCh}); err == nil {
+			<-resultCh
+		}
 	}
 }
