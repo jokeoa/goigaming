@@ -19,6 +19,7 @@ const (
 
 type HubEvent struct {
 	Type     EventType
+	UserID   uuid.UUID
 	PlayerID uuid.UUID
 	Action   domain.ActionType
 	Amount   decimal.Decimal
@@ -29,6 +30,7 @@ type HubEvent struct {
 }
 
 type HubResult struct {
-	Err  error
-	Data any
+	Err   error
+	Data  any
+	Stack *decimal.Decimal
 }
