@@ -12,6 +12,8 @@ type Config struct {
 	DatabaseURL string        `env:"DATABASE_URL,required"`
 	JWTSecret   string        `env:"JWT_SECRET,required"`
 	JWTTokenTTL time.Duration `env:"JWT_TOKEN_TTL" envDefault:"24h"`
+	RedisURL    string        `env:"REDIS_URL"`
+	TurnTimeout time.Duration `env:"TURN_TIMEOUT" envDefault:"30s"`
 }
 
 func Load() (Config, error) {
