@@ -149,7 +149,8 @@ func (s *Service) JoinTable(ctx context.Context, tableID, userID uuid.UUID, seat
 	resultCh := make(chan HubResult, 1)
 	if sendErr := hub.Send(HubEvent{
 		Type:     EventPlayerJoin,
-		PlayerID: userID,
+		UserID:   userID,
+		PlayerID: player.ID,
 		SeatNum:  seatNumber,
 		BuyIn:    buyInAmount,
 		Username: user.Username,
@@ -174,12 +175,17 @@ func (s *Service) LeaveTable(ctx context.Context, tableID, userID uuid.UUID) err
 	hub := s.hubManager.GetHub(tableID)
 	if hub != nil {
 		resultCh := make(chan HubResult, 1)
-		hub.Send(HubEvent{
+		if err := hub.Send(HubEvent{
 			Type:     EventPlayerLeave,
-			PlayerID: userID,
+			UserID:   userID,
+			PlayerID: player.ID,
 			ResultCh: resultCh,
-		})
-		<-resultCh
+		}); err == nil {
+			result := <-resultCh
+			if result.Stack != nil {
+				player.Stack = *result.Stack
+			}
+		}
 	}
 
 	if player.Stack.IsPositive() {

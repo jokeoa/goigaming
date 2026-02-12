@@ -101,6 +101,13 @@ func (h *TableHub) Run(ctx context.Context) {
 			return
 
 		case event := <-h.eventCh:
+			if event.Type == EventShutdown {
+				h.stopTimer()
+				if event.ResultCh != nil {
+					event.ResultCh <- HubResult{}
+				}
+				return
+			}
 			h.handleEvent(ctx, event)
 
 		case replyCh := <-h.stateCh:
@@ -133,19 +140,15 @@ func (h *TableHub) handleEvent(ctx context.Context, event HubEvent) {
 
 	switch event.Type {
 	case EventPlayerAction:
-		result.Err = h.handlePlayerAction(ctx, event.PlayerID, event.Action, event.Amount)
+		result.Err = h.handlePlayerAction(ctx, event.UserID, event.Action, event.Amount)
 	case EventPlayerJoin:
 		result.Err = h.handlePlayerJoin(ctx, event)
 	case EventPlayerLeave:
-		result.Err = h.handlePlayerLeave(ctx, event.PlayerID)
+		stack, err := h.handlePlayerLeave(ctx, event.UserID)
+		result.Err = err
+		result.Stack = stack
 	case EventStartHand:
 		result.Err = h.tryStartHand(ctx)
-	case EventShutdown:
-		h.stopTimer()
-		if event.ResultCh != nil {
-			event.ResultCh <- HubResult{}
-		}
-		return
 	}
 
 	if event.ResultCh != nil {
@@ -154,6 +157,9 @@ func (h *TableHub) handleEvent(ctx context.Context, event HubEvent) {
 }
 
 func (h *TableHub) handlePlayerJoin(ctx context.Context, event HubEvent) error {
+	if event.PlayerID == uuid.Nil {
+		return fmt.Errorf("missing player id for join event")
+	}
 	if _, exists := h.state.Players[event.SeatNum]; exists {
 		return domain.ErrSeatTaken
 	}
@@ -163,9 +169,9 @@ func (h *TableHub) handlePlayerJoin(ctx context.Context, event HubEvent) error {
 	}
 
 	player := &domain.PokerPlayer{
-		ID:         uuid.New(),
+		ID:         event.PlayerID,
 		TableID:    h.state.Table.ID,
-		UserID:     event.PlayerID,
+		UserID:     event.UserID,
 		Username:   event.Username,
 		Stack:      event.BuyIn,
 		SeatNumber: event.SeatNum,
@@ -184,10 +190,10 @@ func (h *TableHub) handlePlayerJoin(ctx context.Context, event HubEvent) error {
 	return nil
 }
 
-func (h *TableHub) handlePlayerLeave(ctx context.Context, userID uuid.UUID) error {
+func (h *TableHub) handlePlayerLeave(ctx context.Context, userID uuid.UUID) (*decimal.Decimal, error) {
 	player := h.state.FindPlayerByUserID(userID)
 	if player == nil {
-		return domain.ErrPlayerNotFound
+		return nil, domain.ErrPlayerNotFound
 	}
 
 	if h.state.Hand != nil {
@@ -200,6 +206,7 @@ func (h *TableHub) handlePlayerLeave(ctx context.Context, userID uuid.UUID) erro
 		}
 	}
 
+	stack := player.Stack
 	delete(h.state.Players, player.SeatNumber)
 
 	h.broadcastTableState()
@@ -208,7 +215,7 @@ func (h *TableHub) handlePlayerLeave(ctx context.Context, userID uuid.UUID) erro
 		h.completeHand(ctx)
 	}
 
-	return nil
+	return &stack, nil
 }
 
 func (h *TableHub) handlePlayerAction(ctx context.Context, userID uuid.UUID, action domain.ActionType, amount decimal.Decimal) error {
