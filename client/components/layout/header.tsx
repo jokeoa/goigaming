@@ -29,11 +29,11 @@ export function Header() {
         <div className="flex items-center gap-4">
           <MobileNav />
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
-              <span className="text-xs font-bold text-primary-foreground">
-                G
-              </span>
-            </div>
+            <img
+              src="/logo.svg"
+              alt="GoiGaming logo"
+              className="h-7 w-auto shrink-0"
+            />
             <span className="hidden font-mono text-sm font-semibold sm:inline-block">
               GoiGaming
             </span>

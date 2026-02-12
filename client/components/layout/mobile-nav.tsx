@@ -33,11 +33,11 @@ export function MobileNav() {
             className="flex items-center gap-2"
             onClick={() => setOpen(false)}
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
-              <span className="text-xs font-bold text-primary-foreground">
-                G
-              </span>
-            </div>
+            <img
+              src="/logo.svg"
+              alt="GoiGaming logo"
+              className="h-7 w-auto shrink-0"
+            />
             <span className="font-mono text-sm font-semibold">GoiGaming</span>
           </Link>
         </div>
